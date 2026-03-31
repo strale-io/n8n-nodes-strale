@@ -1,6 +1,6 @@
 # n8n-nodes-strale
 
-n8n community node for [Strale](https://strale.dev) — 250+ verified data capabilities with quality scores and audit trails.
+Connect n8n workflows to [Strale](https://strale.dev) — 250+ verified data capabilities with quality scores and audit trails.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
@@ -8,88 +8,65 @@ n8n community node for [Strale](https://strale.dev) — 250+ verified data capab
 
 Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
 
+## What you can do
+
+| Operation | Resource | Description |
+|-----------|----------|-------------|
+| **Search** | Capabilities | Find capabilities by keyword or category (e.g., "IBAN", "sanctions", "company data") |
+| **Execute** | Capabilities | Run any of 250+ capabilities by slug |
+| **Trust Profile** | Capabilities | Check a capability's quality score before calling it |
+| **Execute Solution** | Solutions | Run multi-step workflows (e.g., KYC, lead enrichment, website audit) |
+| **Balance** | Account | Check your wallet balance |
+
+## Free tier
+
+These capabilities work without an API key — just install and use:
+
+- `email-validate` — validate any email address
+- `iban-validate` — validate any IBAN
+- `dns-lookup` — DNS records for any domain
+- `url-to-markdown` — convert any URL to clean Markdown
+- `json-repair` — fix malformed JSON
+
+## Quick start
+
+1. Install the node in n8n
+2. Add a Strale node to your workflow
+3. Use **Search** to find a capability (e.g., query: "email")
+4. Use **Execute** with the slug from search results and your input
+
 ## Credentials
 
-1. Sign up at [strale.dev](https://strale.dev) to get an API key (starts with `sk_live_`)
+1. Sign up at [strale.dev](https://strale.dev) — new accounts get €2.00 in trial credits, no card required
 2. In n8n, go to **Credentials** > **New Credential** > **Strale API**
-3. Paste your API key
+3. Paste your API key (starts with `sk_live_`)
 
-**Free-tier operations** (email validation, IBAN validation, DNS lookup, JSON repair, URL to Markdown) work without an API key.
+Free-tier operations work without credentials.
 
-## Operations
+## Example: validate an email (free, no API key)
 
-### Validation
-| Operation | Slug | Free | Description |
-|-----------|------|------|-------------|
-| Validate Email | `email-validate` | Yes | Check email deliverability and format |
-| Validate IBAN | `iban-validate` | Yes | Validate international bank account numbers |
-| Validate VAT | `vat-validate` | No | Validate European VAT numbers via VIES |
+- Operation: **Execute**
+- Slug: `email-validate`
+- Input: `{ "email": "test@example.com" }`
 
-### Domain Intelligence
-| Operation | Slug | Description |
-|-----------|------|-------------|
-| DNS Lookup | `dns-lookup` | Look up DNS records (free) |
-| WHOIS Lookup | `whois-lookup` | Get domain registration data |
-| SSL Check | `ssl-check` | Check SSL certificate validity |
-| Domain Reputation | `domain-reputation` | Assess domain trust signals |
+## Example: KYB check on a Swedish company
 
-### Web Extraction
-| Operation | Slug | Description |
-|-----------|------|-------------|
-| URL to Markdown | `url-to-markdown` | Convert web page to Markdown (free) |
-| Screenshot URL | `screenshot-url` | Take a page screenshot |
-| Extract Metadata | `meta-extract` | Extract Open Graph, title, structured data |
+- Operation: **Execute Solution**
+- Slug: `kyb-essentials-se`
+- Input: `{ "org_number": "5591674668" }`
 
-### Data Utilities
-| Operation | Slug | Description |
-|-----------|------|-------------|
-| JSON Repair | `json-repair` | Fix malformed JSON (free) |
-| Currency Convert | `exchange-rate` | Convert currencies at live rates |
-| Summarize Text | `text-summarize` | AI-powered text summarization |
+## Example: check quality before calling
 
-### Lead Enrichment
-| Operation | Slug | Description |
-|-----------|------|-------------|
-| Enrich Company | `company-enrich` | Enrich company data from URL |
-| Detect Tech Stack | `tech-stack-detect` | Detect website technologies |
+- Operation: **Trust Profile**
+- Slug: `iban-validate`
+- Returns: SQS score (0-100), quality grade, reliability grade, trend
 
-### Custom
-| Operation | Description |
-|-----------|-------------|
-| Execute Capability | Run any of 250+ capabilities by slug or natural language |
-| Search Capabilities | Search the capability catalog |
-| Check Balance | Check wallet balance |
+## Links
 
-## Output
-
-Every operation returns the capability output plus Strale metadata:
-
-```json
-{
-  "valid": true,
-  "country": "DE",
-  "bank_name": "Commerzbank",
-  "_strale": {
-    "transaction_id": "txn_abc123",
-    "sqs": 98,
-    "execution_time_ms": 12,
-    "capability_slug": "iban-validate",
-    "provenance": {
-      "source": "algorithmic",
-      "fetched_at": "2026-03-31T10:00:00Z"
-    }
-  }
-}
-```
-
-The `_strale.sqs` field is the Strale Quality Score (0-100) indicating the capability's current reliability.
-
-## Resources
-
-- [Strale Documentation](https://strale.dev/docs)
-- [Capability Catalog](https://strale.dev/capabilities)
-- [Quality Methodology](https://strale.dev/quality)
-- [n8n Community Nodes Docs](https://docs.n8n.io/integrations/community-nodes/)
+- [Strale API docs](https://strale.dev/docs)
+- [Full capability catalog](https://api.strale.io/v1/capabilities)
+- [Quality methodology](https://strale.dev/quality)
+- [MCP server](https://www.npmjs.com/package/strale-mcp)
 
 ## License
 

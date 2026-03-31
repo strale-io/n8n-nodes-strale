@@ -10,15 +10,6 @@ import { NodeOperationError } from 'n8n-workflow';
 
 const BASE_URL = 'https://api.strale.io';
 
-// Operations that work without an API key
-const FREE_TIER_SLUGS = new Set([
-	'email-validate',
-	'dns-lookup',
-	'json-repair',
-	'url-to-markdown',
-	'iban-validate',
-]);
-
 export class Strale implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Strale',
@@ -26,9 +17,9 @@ export class Strale implements INodeType {
 		icon: 'file:strale.svg',
 		group: ['transform'],
 		version: 1,
-		subtitle: '={{$parameter["operation"] + " (" + $parameter["resource"] + ")"}}',
+		subtitle: '={{$parameter["operation"]}}',
 		description:
-			'Trust layer for AI agents — 250+ verified data capabilities with quality scores and audit trails. Free email and IBAN validation.',
+			'Trust layer for AI agents — 250+ verified data capabilities with quality scores and audit trails. Free email & IBAN validation, company data across 27 countries, sanctions screening, web scraping, lead enrichment, and more.',
 		defaults: {
 			name: 'Strale',
 		},
@@ -41,370 +32,201 @@ export class Strale implements INodeType {
 				required: false,
 			},
 		],
+		requestDefaults: {
+			baseURL: BASE_URL,
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		},
 		properties: [
-			// ── Resource selector ─────────────────────────────────────────
+			// ── Resource ──────────────────────────────────────────────────
 			{
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
 				noDataExpression: true,
 				options: [
-					{ name: 'Validation', value: 'validation' },
-					{ name: 'Domain Intelligence', value: 'domainIntelligence' },
-					{ name: 'Web Extraction', value: 'webExtraction' },
-					{ name: 'Data Utilities', value: 'dataUtilities' },
-					{ name: 'Lead Enrichment', value: 'leadEnrichment' },
-					{ name: 'Custom', value: 'custom' },
+					{ name: 'Capabilities', value: 'capabilities' },
+					{ name: 'Solutions', value: 'solutions' },
+					{ name: 'Account', value: 'account' },
 				],
-				default: 'validation',
+				default: 'capabilities',
 			},
 
-			// ── Validation operations ─────────────────────────────────────
+			// ── Capabilities operations ───────────────────────────────────
 			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
 				noDataExpression: true,
-				displayOptions: { show: { resource: ['validation'] } },
+				displayOptions: { show: { resource: ['capabilities'] } },
 				options: [
 					{
-						name: 'Validate Email',
-						value: 'emailValidate',
-						description: 'Validate an email address (free, no API key needed)',
-						action: 'Validate an email address',
-					},
-					{
-						name: 'Validate IBAN',
-						value: 'ibanValidate',
-						description: 'Validate an international bank account number (free, no API key needed)',
-						action: 'Validate an IBAN',
-					},
-					{
-						name: 'Validate VAT',
-						value: 'vatValidate',
-						description: 'Validate a European VAT number via VIES',
-						action: 'Validate a VAT number',
-					},
-				],
-				default: 'emailValidate',
-			},
-
-			// ── Domain Intelligence operations ────────────────────────────
-			{
-				displayName: 'Operation',
-				name: 'operation',
-				type: 'options',
-				noDataExpression: true,
-				displayOptions: { show: { resource: ['domainIntelligence'] } },
-				options: [
-					{
-						name: 'DNS Lookup',
-						value: 'dnsLookup',
-						description: 'Look up DNS records for a domain (free, no API key needed)',
-						action: 'Look up DNS records',
-					},
-					{
-						name: 'WHOIS Lookup',
-						value: 'whoisLookup',
-						description: 'Get WHOIS registration data for a domain',
-						action: 'Look up WHOIS data',
-					},
-					{
-						name: 'SSL Check',
-						value: 'sslCheck',
-						description: 'Check SSL certificate validity and details',
-						action: 'Check SSL certificate',
-					},
-					{
-						name: 'Domain Reputation',
-						value: 'domainReputation',
-						description: 'Assess domain reputation and trust signals',
-						action: 'Check domain reputation',
-					},
-				],
-				default: 'dnsLookup',
-			},
-
-			// ── Web Extraction operations ─────────────────────────────────
-			{
-				displayName: 'Operation',
-				name: 'operation',
-				type: 'options',
-				noDataExpression: true,
-				displayOptions: { show: { resource: ['webExtraction'] } },
-				options: [
-					{
-						name: 'URL to Markdown',
-						value: 'urlToMarkdown',
-						description: 'Convert a web page to clean Markdown (free, no API key needed)',
-						action: 'Convert URL to Markdown',
-					},
-					{
-						name: 'Screenshot URL',
-						value: 'screenshotUrl',
-						description: 'Take a screenshot of a web page',
-						action: 'Screenshot a URL',
-					},
-					{
-						name: 'Extract Metadata',
-						value: 'metaExtract',
-						description: 'Extract title, description, Open Graph, and structured data from a URL',
-						action: 'Extract metadata from URL',
-					},
-				],
-				default: 'urlToMarkdown',
-			},
-
-			// ── Data Utilities operations ─────────────────────────────────
-			{
-				displayName: 'Operation',
-				name: 'operation',
-				type: 'options',
-				noDataExpression: true,
-				displayOptions: { show: { resource: ['dataUtilities'] } },
-				options: [
-					{
-						name: 'JSON Repair',
-						value: 'jsonRepair',
-						description: 'Fix malformed JSON (free, no API key needed)',
-						action: 'Repair malformed JSON',
-					},
-					{
-						name: 'Currency Convert',
-						value: 'currencyConvert',
-						description: 'Convert between currencies at live rates',
-						action: 'Convert currency',
-					},
-					{
-						name: 'Summarize Text',
-						value: 'summarize',
-						description: 'Summarize text using AI',
-						action: 'Summarize text',
-					},
-				],
-				default: 'jsonRepair',
-			},
-
-			// ── Lead Enrichment operations ────────────────────────────────
-			{
-				displayName: 'Operation',
-				name: 'operation',
-				type: 'options',
-				noDataExpression: true,
-				displayOptions: { show: { resource: ['leadEnrichment'] } },
-				options: [
-					{
-						name: 'Enrich Company',
-						value: 'companyEnrich',
-						description: 'Enrich company data from a domain or URL',
-						action: 'Enrich company data',
-					},
-					{
-						name: 'Detect Tech Stack',
-						value: 'techStackDetect',
-						description: 'Detect technologies used by a website',
-						action: 'Detect tech stack',
-					},
-				],
-				default: 'companyEnrich',
-			},
-
-			// ── Custom operations ─────────────────────────────────────────
-			{
-				displayName: 'Operation',
-				name: 'operation',
-				type: 'options',
-				noDataExpression: true,
-				displayOptions: { show: { resource: ['custom'] } },
-				options: [
-					{
-						name: 'Execute Capability',
-						value: 'executeCapability',
-						description: 'Execute any of 250+ Strale capabilities by slug or natural language',
-						action: 'Execute a capability',
-					},
-					{
-						name: 'Search Capabilities',
-						value: 'searchCapabilities',
-						description: 'Search the capability catalog',
+						name: 'Search',
+						value: 'search',
+						description: 'Find capabilities by keyword or category',
 						action: 'Search capabilities',
 					},
 					{
-						name: 'Check Balance',
-						value: 'checkBalance',
+						name: 'Execute',
+						value: 'execute',
+						description: 'Run any capability by slug',
+						action: 'Execute a capability',
+					},
+					{
+						name: 'Trust Profile',
+						value: 'trustProfile',
+						description: 'Check quality score before calling a capability',
+						action: 'Get trust profile',
+					},
+				],
+				default: 'search',
+			},
+
+			// ── Solutions operations ──────────────────────────────────────
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: { show: { resource: ['solutions'] } },
+				options: [
+					{
+						name: 'Execute Solution',
+						value: 'executeSolution',
+						description: 'Run a multi-step solution (e.g., KYC, lead enrichment, website audit)',
+						action: 'Execute a solution',
+					},
+				],
+				default: 'executeSolution',
+			},
+
+			// ── Account operations ────────────────────────────────────────
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: { show: { resource: ['account'] } },
+				options: [
+					{
+						name: 'Balance',
+						value: 'balance',
 						description: 'Check wallet balance',
 						action: 'Check wallet balance',
 					},
 				],
-				default: 'executeCapability',
+				default: 'balance',
 			},
 
-			// ── Input fields ──────────────────────────────────────────────
-
-			// Email
-			{
-				displayName: 'Email',
-				name: 'email',
-				type: 'string',
-				default: '',
-				required: true,
-				placeholder: 'hello@example.com',
-				displayOptions: {
-					show: { operation: ['emailValidate'] },
-				},
-			},
-
-			// IBAN
-			{
-				displayName: 'IBAN',
-				name: 'iban',
-				type: 'string',
-				default: '',
-				required: true,
-				placeholder: 'DE89370400440532013000',
-				displayOptions: {
-					show: { operation: ['ibanValidate'] },
-				},
-			},
-
-			// VAT number
-			{
-				displayName: 'VAT Number',
-				name: 'vatNumber',
-				type: 'string',
-				default: '',
-				required: true,
-				placeholder: 'SE556703748501',
-				displayOptions: {
-					show: { operation: ['vatValidate'] },
-				},
-			},
-
-			// Domain (shared across multiple operations)
-			{
-				displayName: 'Domain',
-				name: 'domain',
-				type: 'string',
-				default: '',
-				required: true,
-				placeholder: 'example.com',
-				displayOptions: {
-					show: { operation: ['dnsLookup', 'whoisLookup', 'sslCheck', 'domainReputation'] },
-				},
-			},
-
-			// URL (shared across web extraction + enrichment)
-			{
-				displayName: 'URL',
-				name: 'url',
-				type: 'string',
-				default: '',
-				required: true,
-				placeholder: 'https://example.com',
-				displayOptions: {
-					show: {
-						operation: [
-							'urlToMarkdown',
-							'screenshotUrl',
-							'metaExtract',
-							'companyEnrich',
-							'techStackDetect',
-						],
-					},
-				},
-			},
-
-			// JSON string
-			{
-				displayName: 'JSON String',
-				name: 'jsonString',
-				type: 'string',
-				typeOptions: { rows: 5 },
-				default: '',
-				required: true,
-				placeholder: '{"name": "test", missing_quote: true}',
-				displayOptions: {
-					show: { operation: ['jsonRepair'] },
-				},
-			},
-
-			// Currency convert fields
-			{
-				displayName: 'Amount',
-				name: 'amount',
-				type: 'number',
-				default: 100,
-				required: true,
-				displayOptions: { show: { operation: ['currencyConvert'] } },
-			},
-			{
-				displayName: 'From Currency',
-				name: 'fromCurrency',
-				type: 'string',
-				default: 'EUR',
-				required: true,
-				placeholder: 'EUR',
-				displayOptions: { show: { operation: ['currencyConvert'] } },
-			},
-			{
-				displayName: 'To Currency',
-				name: 'toCurrency',
-				type: 'string',
-				default: 'USD',
-				required: true,
-				placeholder: 'USD',
-				displayOptions: { show: { operation: ['currencyConvert'] } },
-			},
-
-			// Summarize text
-			{
-				displayName: 'Text',
-				name: 'text',
-				type: 'string',
-				typeOptions: { rows: 5 },
-				default: '',
-				required: true,
-				displayOptions: { show: { operation: ['summarize'] } },
-			},
-
-			// Custom: execute capability
-			{
-				displayName: 'Capability Slug',
-				name: 'capabilitySlug',
-				type: 'string',
-				default: '',
-				placeholder: 'iban-validate',
-				description: 'The slug of the capability to execute. Leave empty to use natural language task.',
-				displayOptions: { show: { operation: ['executeCapability'] } },
-			},
-			{
-				displayName: 'Task',
-				name: 'task',
-				type: 'string',
-				default: '',
-				placeholder: 'Validate IBAN DE89370400440532013000',
-				description:
-					'Natural language description of what you want to do. Used when Capability Slug is empty.',
-				displayOptions: { show: { operation: ['executeCapability'] } },
-			},
-			{
-				displayName: 'Input (JSON)',
-				name: 'inputJson',
-				type: 'json',
-				default: '{}',
-				description: 'JSON object with input parameters for the capability',
-				displayOptions: { show: { operation: ['executeCapability'] } },
-			},
-
-			// Custom: search
+			// ── Search fields ─────────────────────────────────────────────
 			{
 				displayName: 'Query',
 				name: 'query',
 				type: 'string',
 				default: '',
 				required: true,
-				placeholder: 'validate bank account numbers',
-				displayOptions: { show: { operation: ['searchCapabilities'] } },
+				placeholder: 'e.g., sanctions, IBAN, company data, web scraping',
+				description: 'Search keyword to find matching capabilities',
+				displayOptions: { show: { operation: ['search'] } },
+			},
+			{
+				displayName: 'Category',
+				name: 'category',
+				type: 'options',
+				default: '',
+				description: 'Filter results by category',
+				displayOptions: { show: { operation: ['search'] } },
+				options: [
+					{ name: 'All Categories', value: '' },
+					{ name: 'Compliance', value: 'compliance' },
+					{ name: 'Competitive Intelligence', value: 'competitive-intelligence' },
+					{ name: 'Data Extraction', value: 'data-extraction' },
+					{ name: 'Data Processing', value: 'data-processing' },
+					{ name: 'Developer Tools', value: 'developer-tools' },
+					{ name: 'Document Extraction', value: 'document-extraction' },
+					{ name: 'File Conversion', value: 'file-conversion' },
+					{ name: 'Financial', value: 'financial' },
+					{ name: 'Monitoring', value: 'monitoring' },
+					{ name: 'Sales', value: 'sales' },
+					{ name: 'Security', value: 'security' },
+					{ name: 'Text Processing', value: 'text-processing' },
+					{ name: 'Utility', value: 'utility' },
+					{ name: 'Validation', value: 'validation' },
+					{ name: 'Web Intelligence', value: 'web-intelligence' },
+					{ name: 'Web Scraping', value: 'web-scraping' },
+					{ name: 'Web3', value: 'web3' },
+				],
+			},
+
+			// ── Execute fields ────────────────────────────────────────────
+			{
+				displayName: 'Slug',
+				name: 'slug',
+				type: 'string',
+				default: '',
+				required: true,
+				placeholder: 'e.g., email-validate, swedish-company-data, pep-check',
+				description: 'Capability slug from search results. Use Search to discover available slugs.',
+				displayOptions: { show: { operation: ['execute'] } },
+			},
+			{
+				displayName: 'Input',
+				name: 'input',
+				type: 'json',
+				default: '{}',
+				required: true,
+				description: 'Input parameters as a JSON object. Fields depend on the capability.',
+				displayOptions: { show: { operation: ['execute'] } },
+			},
+			{
+				displayName: 'Max Price (EUR Cents)',
+				name: 'maxPriceCents',
+				type: 'number',
+				default: 200,
+				description: 'Maximum price in EUR cents. Execution fails if the capability costs more. Default: 200 (€2.00).',
+				displayOptions: { show: { operation: ['execute'] } },
+			},
+
+			// ── Trust Profile fields ──────────────────────────────────────
+			{
+				displayName: 'Slug',
+				name: 'trustSlug',
+				type: 'string',
+				default: '',
+				required: true,
+				placeholder: 'e.g., iban-validate, kyb-essentials-se',
+				description: 'Capability or solution slug to check',
+				displayOptions: { show: { operation: ['trustProfile'] } },
+			},
+
+			// ── Execute Solution fields ───────────────────────────────────
+			{
+				displayName: 'Slug',
+				name: 'solutionSlug',
+				type: 'string',
+				default: '',
+				required: true,
+				placeholder: 'e.g., kyb-essentials-se, lead-enrich, invoice-verify-uk',
+				description: 'Solution slug. Use Search to discover available solutions.',
+				displayOptions: { show: { operation: ['executeSolution'] } },
+			},
+			{
+				displayName: 'Input',
+				name: 'solutionInput',
+				type: 'json',
+				default: '{}',
+				required: true,
+				description: 'Input parameters as a JSON object. Fields depend on the solution.',
+				displayOptions: { show: { operation: ['executeSolution'] } },
+			},
+			{
+				displayName: 'Max Price (EUR Cents)',
+				name: 'solutionMaxPriceCents',
+				type: 'number',
+				default: 500,
+				description: 'Maximum price in EUR cents. Solutions are multi-step and cost more. Default: 500 (€5.00).',
+				displayOptions: { show: { operation: ['executeSolution'] } },
 			},
 		],
 	};
@@ -415,33 +237,30 @@ export class Strale implements INodeType {
 
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const resource = this.getNodeParameter('resource', i) as string;
 				const operation = this.getNodeParameter('operation', i) as string;
+				let result: INodeExecutionData['json'];
 
-				let result: Record<string, unknown> | Record<string, unknown>[];
-
-				if (operation === 'checkBalance') {
-					result = await straleGet.call(this, '/v1/balance');
-				} else if (operation === 'searchCapabilities') {
-					const query = this.getNodeParameter('query', i) as string;
-					const capabilities = await straleGet.call(this, '/v1/capabilities');
-					const caps = (capabilities as Record<string, unknown>).capabilities as Array<Record<string, unknown>> ?? capabilities;
-					const q = query.toLowerCase();
-					const filtered = (Array.isArray(caps) ? caps : []).filter(
-						(c: Record<string, unknown>) =>
-							String(c.name ?? '').toLowerCase().includes(q) ||
-							String(c.slug ?? '').toLowerCase().includes(q) ||
-							String(c.description ?? '').toLowerCase().includes(q) ||
-							String(c.category ?? '').toLowerCase().includes(q),
-					);
-					result = { query, count: filtered.length, capabilities: filtered.slice(0, 20) };
-				} else {
-					const { slug, inputs } = buildRequest.call(this, i, resource, operation);
-					const isFree = FREE_TIER_SLUGS.has(slug);
-					result = await straleDo.call(this, slug, inputs, isFree);
+				switch (operation) {
+					case 'search':
+						result = await executeSearch.call(this, i);
+						break;
+					case 'execute':
+						result = await executeCapability.call(this, i);
+						break;
+					case 'trustProfile':
+						result = await executeTrustProfile.call(this, i);
+						break;
+					case 'executeSolution':
+						result = await executeSolution.call(this, i);
+						break;
+					case 'balance':
+						result = await executeBalance.call(this);
+						break;
+					default:
+						throw new Error(`Unknown operation: ${operation}`);
 				}
 
-				returnData.push({ json: result as INodeExecutionData['json'] });
+				returnData.push({ json: result });
 			} catch (error) {
 				if (this.continueOnFail()) {
 					returnData.push({
@@ -458,153 +277,134 @@ export class Strale implements INodeType {
 	}
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Operation handlers ────────────────────────────────────────────────────────
 
-function buildRequest(
+async function executeSearch(
 	this: IExecuteFunctions,
 	i: number,
-	_resource: string,
-	operation: string,
-): { slug: string; inputs: Record<string, unknown> } {
-	switch (operation) {
-		case 'emailValidate':
-			return { slug: 'email-validate', inputs: { email: this.getNodeParameter('email', i) } };
-		case 'ibanValidate':
-			return { slug: 'iban-validate', inputs: { iban: this.getNodeParameter('iban', i) } };
-		case 'vatValidate':
-			return {
-				slug: 'vat-validate',
-				inputs: { vat_number: this.getNodeParameter('vatNumber', i) },
-			};
-		case 'dnsLookup':
-			return { slug: 'dns-lookup', inputs: { domain: this.getNodeParameter('domain', i) } };
-		case 'whoisLookup':
-			return { slug: 'whois-lookup', inputs: { domain: this.getNodeParameter('domain', i) } };
-		case 'sslCheck':
-			return { slug: 'ssl-check', inputs: { domain: this.getNodeParameter('domain', i) } };
-		case 'domainReputation':
-			return {
-				slug: 'domain-reputation',
-				inputs: { domain: this.getNodeParameter('domain', i) },
-			};
-		case 'urlToMarkdown':
-			return { slug: 'url-to-markdown', inputs: { url: this.getNodeParameter('url', i) } };
-		case 'screenshotUrl':
-			return { slug: 'screenshot-url', inputs: { url: this.getNodeParameter('url', i) } };
-		case 'metaExtract':
-			return { slug: 'meta-extract', inputs: { url: this.getNodeParameter('url', i) } };
-		case 'jsonRepair':
-			return {
-				slug: 'json-repair',
-				inputs: { json_string: this.getNodeParameter('jsonString', i) },
-			};
-		case 'currencyConvert':
-			return {
-				slug: 'exchange-rate',
-				inputs: {
-					amount: this.getNodeParameter('amount', i),
-					from: this.getNodeParameter('fromCurrency', i),
-					to: this.getNodeParameter('toCurrency', i),
-				},
-			};
-		case 'summarize':
-			return { slug: 'text-summarize', inputs: { text: this.getNodeParameter('text', i) } };
-		case 'companyEnrich':
-			return { slug: 'company-enrich', inputs: { url: this.getNodeParameter('url', i) } };
-		case 'techStackDetect':
-			return {
-				slug: 'tech-stack-detect',
-				inputs: { url: this.getNodeParameter('url', i) },
-			};
-		case 'executeCapability': {
-			const slug = this.getNodeParameter('capabilitySlug', i) as string;
-			const task = this.getNodeParameter('task', i) as string;
-			const inputJson = this.getNodeParameter('inputJson', i) as string | Record<string, unknown>;
-			const inputs =
-				typeof inputJson === 'string' ? JSON.parse(inputJson || '{}') : inputJson;
-			if (slug) {
-				return { slug, inputs: inputs as Record<string, unknown> };
-			}
-			// Natural language — pass as task, let Strale route it
-			return { slug: '', inputs: { _task: task, ...(inputs as Record<string, unknown>) } };
-		}
-		default:
-			throw new Error(`Unknown operation: ${operation}`);
-	}
+): Promise<INodeExecutionData['json']> {
+	const query = this.getNodeParameter('query', i) as string;
+	const category = this.getNodeParameter('category', i) as string;
+
+	let url = `${BASE_URL}/v1/capabilities`;
+	const params: string[] = [];
+	if (query) params.push(`search=${encodeURIComponent(query)}`);
+	if (category) params.push(`category=${encodeURIComponent(category)}`);
+	if (params.length) url += `?${params.join('&')}`;
+
+	// Search works without auth
+	const result = await this.helpers.httpRequest({
+		method: 'GET',
+		url,
+		headers: { Accept: 'application/json' },
+	});
+	return result as INodeExecutionData['json'];
 }
 
-async function straleDo(
+async function executeCapability(
 	this: IExecuteFunctions,
-	slug: string,
-	inputs: Record<string, unknown>,
-	isFree: boolean,
-): Promise<Record<string, unknown>> {
-	const body: Record<string, unknown> = {};
-	if (slug) {
-		body.capability_slug = slug;
-		body.inputs = inputs;
-	} else {
-		// Natural language mode
-		body.task = inputs._task;
-		const rest = { ...inputs };
-		delete rest._task;
-		if (Object.keys(rest).length > 0) {
-			body.inputs = rest;
-		}
-	}
+	i: number,
+): Promise<INodeExecutionData['json']> {
+	const slug = this.getNodeParameter('slug', i) as string;
+	const input = this.getNodeParameter('input', i);
+	const maxPriceCents = this.getNodeParameter('maxPriceCents', i) as number;
 
-	const options: IHttpRequestOptions = {
-		method: 'POST',
-		url: `${BASE_URL}/v1/do`,
-		body,
-		json: true,
+	const parsedInput = typeof input === 'string' ? JSON.parse(input || '{}') : input;
+
+	const body = {
+		capability_slug: slug,
+		inputs: parsedInput,
+		max_price_cents: maxPriceCents,
 	};
 
-	let result: Record<string, unknown>;
-	if (isFree) {
-		// Free-tier: call without auth
-		result = (await this.helpers.httpRequest({
-			method: 'POST',
-			url: `${BASE_URL}/v1/do`,
-			body,
-			headers: { 'Content-Type': 'application/json' },
-		})) as Record<string, unknown>;
-	} else {
-		result = (await this.helpers.httpRequestWithAuthentication.call(
-			this,
-			'straleApi',
-			options,
-		)) as Record<string, unknown>;
-	}
-
-	// Flatten: return output directly if present, otherwise full response
-	if (result.output && typeof result.output === 'object') {
-		return {
-			...(result.output as Record<string, unknown>),
-			_strale: {
-				transaction_id: result.transaction_id,
-				sqs: result.sqs,
-				execution_time_ms: result.execution_time_ms,
-				capability_slug: result.capability_slug,
-				provenance: result.provenance,
-			},
-		};
-	}
-	return result;
+	return await stralePost.call(this, '/v1/do', body);
 }
 
-async function straleGet(
+async function executeSolution(
 	this: IExecuteFunctions,
-	path: string,
-): Promise<Record<string, unknown>> {
+	i: number,
+): Promise<INodeExecutionData['json']> {
+	const slug = this.getNodeParameter('solutionSlug', i) as string;
+	const input = this.getNodeParameter('solutionInput', i);
+	const maxPriceCents = this.getNodeParameter('solutionMaxPriceCents', i) as number;
+
+	const parsedInput = typeof input === 'string' ? JSON.parse(input || '{}') : input;
+
+	const body = {
+		capability_slug: slug,
+		inputs: parsedInput,
+		max_price_cents: maxPriceCents,
+	};
+
+	return await stralePost.call(this, '/v1/do', body);
+}
+
+async function executeTrustProfile(
+	this: IExecuteFunctions,
+	i: number,
+): Promise<INodeExecutionData['json']> {
+	const slug = this.getNodeParameter('trustSlug', i) as string;
+	const url = `${BASE_URL}/v1/quality/${encodeURIComponent(slug)}`;
+
+	// Quality endpoint is public, no auth needed
+	const result = await this.helpers.httpRequest({
+		method: 'GET',
+		url,
+		headers: { Accept: 'application/json' },
+	});
+	return result as INodeExecutionData['json'];
+}
+
+async function executeBalance(
+	this: IExecuteFunctions,
+): Promise<INodeExecutionData['json']> {
 	const options: IHttpRequestOptions = {
 		method: 'GET',
-		url: `${BASE_URL}${path}`,
+		url: `${BASE_URL}/v1/balance`,
 		json: true,
 	};
-	return (await this.helpers.httpRequestWithAuthentication.call(
+	const result = await this.helpers.httpRequestWithAuthentication.call(
 		this,
 		'straleApi',
 		options,
-	)) as Record<string, unknown>;
+	);
+	return result as INodeExecutionData['json'];
+}
+
+// ── HTTP helpers ──────────────────────────────────────────────────────────────
+
+async function stralePost(
+	this: IExecuteFunctions,
+	path: string,
+	body: Record<string, unknown>,
+): Promise<INodeExecutionData['json']> {
+	// Try with auth if credentials are configured, fall back to unauthenticated
+	try {
+		const credentials = await this.getCredentials('straleApi').catch(() => null);
+		if (credentials?.apiKey) {
+			const options: IHttpRequestOptions = {
+				method: 'POST',
+				url: `${BASE_URL}${path}`,
+				body,
+				json: true,
+			};
+			const result = await this.helpers.httpRequestWithAuthentication.call(
+				this,
+				'straleApi',
+				options,
+			);
+			return result as INodeExecutionData['json'];
+		}
+	} catch {
+		// No credentials configured — try without auth (works for free-tier)
+	}
+
+	// Unauthenticated call (free-tier capabilities)
+	const result = await this.helpers.httpRequest({
+		method: 'POST',
+		url: `${BASE_URL}${path}`,
+		body,
+		headers: { 'Content-Type': 'application/json' },
+	});
+	return result as INodeExecutionData['json'];
 }
