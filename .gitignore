@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.js
+!eslint.config.*
+*.d.ts
+*.js.map
+.tsbuildinfo

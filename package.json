@@ -1,0 +1,45 @@
+{
+	"name": "n8n-nodes-strale",
+	"version": "0.1.0",
+	"description": "n8n community node for Strale — 250+ verified data capabilities (validation, enrichment, web extraction, domain intelligence) with quality scores and audit trails",
+	"keywords": ["n8n-community-node-package"],
+	"license": "MIT",
+	"homepage": "https://github.com/strale-io/n8n-nodes-strale",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/strale-io/n8n-nodes-strale.git"
+	},
+	"author": {
+		"name": "Strale",
+		"email": "hello@strale.io",
+		"url": "https://strale.dev"
+	},
+	"main": "dist/nodes/Strale/Strale.node.js",
+	"files": ["dist"],
+	"scripts": {
+		"build": "tsc && copyfiles -u 1 \"nodes/**/*.json\" dist/ && cp nodes/Strale/strale.svg dist/nodes/Strale/strale.svg",
+		"dev": "tsc --watch",
+		"lint": "eslint . --ext .ts",
+		"lint:fix": "eslint . --ext .ts --fix",
+		"prepublishOnly": "npm run build"
+	},
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"credentials": [
+			"dist/credentials/StraleApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/Strale/Strale.node.js"
+		]
+	},
+	"devDependencies": {
+		"@typescript-eslint/eslint-plugin": "^8.0.0",
+		"@typescript-eslint/parser": "^8.0.0",
+		"copyfiles": "^2.4.1",
+		"eslint": "^8.57.0",
+		"typescript": "^5.7.0"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	}
+}

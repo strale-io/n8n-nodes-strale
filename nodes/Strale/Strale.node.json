@@ -1,0 +1,22 @@
+{
+	"node": "n8n-nodes-strale.strale",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Utility"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://github.com/strale-io/n8n-nodes-strale#credentials"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://github.com/strale-io/n8n-nodes-strale"
+			}
+		]
+	},
+	"alias": ["validation", "iban", "email", "domain", "whois", "scrape", "enrichment", "compliance"],
+	"subcategories": {
+		"Utility": ["Data Transformation"]
+	}
+}
