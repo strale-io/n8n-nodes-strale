@@ -360,7 +360,7 @@ async function executeBalance(
 ): Promise<INodeExecutionData['json']> {
 	const options: IHttpRequestOptions = {
 		method: 'GET',
-		url: `${BASE_URL}/v1/balance`,
+		url: `${BASE_URL}/v1/wallet/balance`,
 		json: true,
 	};
 	const result = await this.helpers.httpRequestWithAuthentication.call(

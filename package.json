@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-strale",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"description": "n8n community node for Strale — 271 verified data capabilities (validation, enrichment, web extraction, domain intelligence) with quality scores and audit trails",
 	"keywords": [
 		"n8n-community-node-package"

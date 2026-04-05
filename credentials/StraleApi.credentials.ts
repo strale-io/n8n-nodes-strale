@@ -34,7 +34,7 @@ export class StraleApi implements ICredentialType {
 	test: ICredentialTestRequest = {
 		request: {
 			baseURL: 'https://api.strale.io',
-			url: '/v1/balance',
+			url: '/v1/wallet/balance',
 			method: 'GET',
 		},
 	};
