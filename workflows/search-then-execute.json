@@ -1,0 +1,54 @@
+{
+  "name": "Strale — Search Capabilities Then Execute",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "resource": "capabilities",
+        "operation": "search",
+        "query": "sanctions screening"
+      },
+      "id": "strale-search",
+      "name": "Search Capabilities",
+      "type": "n8n-nodes-strale.strale",
+      "typeVersion": 1,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "resource": "capabilities",
+        "operation": "execute",
+        "slug": "sanctions-check",
+        "input": "{ \"name\": \"John Smith\" }",
+        "maxPriceCents": 200
+      },
+      "id": "strale-execute",
+      "name": "Run Sanctions Check",
+      "type": "n8n-nodes-strale.strale",
+      "typeVersion": 1,
+      "position": [720, 300],
+      "credentials": {
+        "straleApi": { "id": "1", "name": "Strale API" }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [{ "node": "Search Capabilities", "type": "main", "index": 0 }]
+      ]
+    },
+    "Search Capabilities": {
+      "main": [
+        [{ "node": "Run Sanctions Check", "type": "main", "index": 0 }]
+      ]
+    }
+  }
+}

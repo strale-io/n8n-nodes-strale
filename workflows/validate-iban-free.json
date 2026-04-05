@@ -1,0 +1,34 @@
+{
+  "name": "Strale — Validate IBAN (Free, No API Key)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "resource": "capabilities",
+        "operation": "execute",
+        "slug": "iban-validate",
+        "input": "{ \"iban\": \"DE89370400440532013000\" }",
+        "maxPriceCents": 200
+      },
+      "id": "strale-1",
+      "name": "Validate IBAN",
+      "type": "n8n-nodes-strale.strale",
+      "typeVersion": 1,
+      "position": [480, 300]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [{ "node": "Validate IBAN", "type": "main", "index": 0 }]
+      ]
+    }
+  }
+}

@@ -1,8 +1,10 @@
 {
 	"name": "n8n-nodes-strale",
-	"version": "0.1.0",
-	"description": "n8n community node for Strale — 250+ verified data capabilities (validation, enrichment, web extraction, domain intelligence) with quality scores and audit trails",
-	"keywords": ["n8n-community-node-package"],
+	"version": "0.1.2",
+	"description": "n8n community node for Strale — 271 verified data capabilities (validation, enrichment, web extraction, domain intelligence) with quality scores and audit trails",
+	"keywords": [
+		"n8n-community-node-package"
+	],
 	"license": "MIT",
 	"homepage": "https://github.com/strale-io/n8n-nodes-strale",
 	"repository": {
@@ -15,7 +17,9 @@
 		"url": "https://strale.dev"
 	},
 	"main": "dist/nodes/Strale/Strale.node.js",
-	"files": ["dist"],
+	"files": [
+		"dist"
+	],
 	"scripts": {
 		"build": "tsc && copyfiles -u 1 \"nodes/**/*.json\" dist/ && cp nodes/Strale/strale.svg dist/nodes/Strale/strale.svg",
 		"dev": "tsc --watch",

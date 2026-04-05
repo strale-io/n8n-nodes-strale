@@ -1,6 +1,6 @@
 # n8n-nodes-strale
 
-Connect n8n workflows to [Strale](https://strale.dev) — 250+ verified data capabilities with quality scores and audit trails.
+Connect n8n workflows to [Strale](https://strale.dev) — 271 verified data capabilities with quality scores and audit trails.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
@@ -13,7 +13,7 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 | Operation | Resource | Description |
 |-----------|----------|-------------|
 | **Search** | Capabilities | Find capabilities by keyword or category (e.g., "IBAN", "sanctions", "company data") |
-| **Execute** | Capabilities | Run any of 250+ capabilities by slug |
+| **Execute** | Capabilities | Run any of 271 capabilities by slug |
 | **Trust Profile** | Capabilities | Check a capability's quality score before calling it |
 | **Execute Solution** | Solutions | Run multi-step workflows (e.g., KYC, lead enrichment, website audit) |
 | **Balance** | Account | Check your wallet balance |

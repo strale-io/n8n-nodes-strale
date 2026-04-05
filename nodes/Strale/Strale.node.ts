@@ -19,7 +19,7 @@ export class Strale implements INodeType {
 		version: 1,
 		subtitle: '={{$parameter["operation"]}}',
 		description:
-			'Trust layer for AI agents — 250+ verified data capabilities with quality scores and audit trails. Free email & IBAN validation, company data across 27 countries, sanctions screening, web scraping, lead enrichment, and more.',
+			'Trust layer for AI agents — 271 verified data capabilities with quality scores and audit trails. Free email & IBAN validation, company data across 27 countries, sanctions screening, web scraping, lead enrichment, and more.',
 		defaults: {
 			name: 'Strale',
 		},
@@ -378,33 +378,31 @@ async function stralePost(
 	path: string,
 	body: Record<string, unknown>,
 ): Promise<INodeExecutionData['json']> {
-	// Try with auth if credentials are configured, fall back to unauthenticated
-	try {
-		const credentials = await this.getCredentials('straleApi').catch(() => null);
-		if (credentials?.apiKey) {
-			const options: IHttpRequestOptions = {
-				method: 'POST',
-				url: `${BASE_URL}${path}`,
-				body,
-				json: true,
-			};
-			const result = await this.helpers.httpRequestWithAuthentication.call(
-				this,
-				'straleApi',
-				options,
-			);
-			return result as INodeExecutionData['json'];
-		}
-	} catch {
-		// No credentials configured — try without auth (works for free-tier)
-	}
-
-	// Unauthenticated call (free-tier capabilities)
-	const result = await this.helpers.httpRequest({
+	const options: IHttpRequestOptions = {
 		method: 'POST',
 		url: `${BASE_URL}${path}`,
 		body,
-		headers: { 'Content-Type': 'application/json' },
-	});
-	return result as INodeExecutionData['json'];
+		json: true,
+	};
+
+	// Try authenticated request first; fall back to unauthenticated for free-tier
+	try {
+		const result = await this.helpers.httpRequestWithAuthentication.call(
+			this,
+			'straleApi',
+			options,
+		);
+		return result as INodeExecutionData['json'];
+	} catch (error) {
+		// If credentials aren't configured, fall back to unauthenticated (free-tier)
+		const msg = (error as Error).message || '';
+		if (msg.includes('No credentials') || msg.includes('credentials')) {
+			const result = await this.helpers.httpRequest({
+				...options,
+				headers: { 'Content-Type': 'application/json' },
+			});
+			return result as INodeExecutionData['json'];
+		}
+		throw error;
+	}
 }

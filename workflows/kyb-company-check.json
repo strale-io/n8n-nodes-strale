@@ -1,0 +1,37 @@
+{
+  "name": "Strale — KYB Company Verification (Sweden)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "resource": "capabilities",
+        "operation": "execute",
+        "slug": "swedish-company-data",
+        "input": "{ \"query\": \"Spotify\" }",
+        "maxPriceCents": 200
+      },
+      "id": "strale-1",
+      "name": "Look Up Company",
+      "type": "n8n-nodes-strale.strale",
+      "typeVersion": 1,
+      "position": [480, 300],
+      "credentials": {
+        "straleApi": { "id": "1", "name": "Strale API" }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [{ "node": "Look Up Company", "type": "main", "index": 0 }]
+      ]
+    }
+  }
+}
